@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+h2 {
+font-size: 24px;
+}
+
+h3 {
+font-size: 20px;
+}
+
+h4 {
+font-size: 18px;
+}
+
+ol {
+margin-left: 20px;
+}
+</style>
+
+</head>
+
+
+<h2>Data processing</h2>
+<p>We employ two methods to obtain a smoothed wastewater signal and handle outliers, aiming to recover the underlying pattern:
+     the trimmed average and the Autoregressive Integrated Moving Average (ARIMA) model of order 1.</p>
+
+<h3>Trimmed Average</h3>
+<p>We apply a 10-day moving average, which involves calculating the average concentration over a 10-day window while 
+    excluding extreme values. This approach helps reduce the impact of outliers and provides a more stable representation
+     of the SARS-CoV-2 RNA concentration over time.</p>
+
+<h3>Autoregressive Integrated Moving Average (ARIMA)</h3>
+<p>To obtain a smoothed concentration signal and capture the underlying pattern of SARS-CoV-2 RNA concentration, 
+    we employ an Autoregressive Integrated Moving Average (ARIMA) model of order 1. The ARIMA model incorporates 
+    the autocorrelation by estimating the current concentration based on the concentration at the previous time point. 
+    This temporal dependency allows the autoregressive model to provide a smoother representation of the underlying 
+    concentration pattern. ARIMA is a popular statistical model used for time series forecasting, combining three key 
+    components: autoregression, differencing, and moving average. In this case, we utilize the implementation of ARIMA
+     available in the INLA package. INLA (Integrated Nested Laplace Approximations) is a computational method for Bayesian
+      inference that offers a fast and efficient alternative to Markov chain Monte Carlo (MCMC) methods. It is particularly 
+      useful for models with latent Gaussian structures. The model implemented in INLA can be described as follows:
+
+<p>The autoregressive model of order 1 (AR1) for the Gaussian vector <strong>&#120582; = (&#120583;<sub>1</sub>, &#8943;, &#120583;<sub>n</sub>)</strong> is defined as:</p>
+<p>
+    &#120583;<sub>1</sub> &sim; &#119911;(0, (&#964;(1 - &#961;<sup>2</sup>))<sup>-1</sup>)<br>
+    &#120583;<sub>i</sub> = &#961;&#120583;<sub>i-1</sub> + &#949;<sub>i</sub> ; &emsp; &#949;<sub>i</sub> &sim; &#119911;(0, &#964;<sup>-1</sup>) &emsp; i = 2, &#8943;, n
+</p>
+<p>where |&#961;| &lt; 1. The parameter &#964; controls the variability or precision of the random variables, while &#961; determines the strength and direction of the correlation between consecutive observations. These parameters are estimated using the data, and the estimated values are used to recover &#120583;<sub>t</sub>.</p>
+
+<p>In our case, we consider &#120583;<sub>t</sub> as the logarithm of the RNA concentration in wastewater. The parameter
+     estimation is performed using INLA, and the corresponding R code is as follows:</p>
+
+
+<div style="background-color: white; padding: 10px;">
+    <p style="color: black; margin: 0;"><strong>&lt;R&gt;</strong></p>
+    <pre style="color: black; margin: 0;">
+<code>
+
+# Example 1
+
+library(INLA)
+tm  &lt;- 1:dim(data)[1]  
+y   &lt;- log(data[,'colname'])
+
+## fit the model
+formula = y~f(z,model="ar1")
+result = inla(formula,family="gaussian", data = list(y=y, z=tm))#, E=E)
+
+# expected log concentration
+yhat = exp(result$summary.fitted.values)
+</code>
+    </pre>
+    <p style="color: black; margin: 0;"><strong>&lt;/R&gt;</strong></p>
+</div>

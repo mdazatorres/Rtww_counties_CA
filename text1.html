@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+h2 {
+font-size: 24px;
+}
+
+h3 {
+font-size: 20px;
+}
+
+h4 {
+font-size: 18px;
+}
+
+ol {
+margin-left: 20px;
+}
+</style>
+
+</head>
+<body>
+<section>
+<h2>Rt estimations</h2>
+<p>We estimate the <em>Rt</em> value, which represents the effective reproduction number, using the smoothed normalized concentration for each county. In addition, we compare it with the <em>Rt</em> estimated using cases and the test positivity rate. The following steps provide a general overview of the process for estimating <em>Rt</em> using wastewater data.</p>
+</section>
+<section>
+<h3>Wastewater Data Processing</h3>
+<ol>
+<li>The SARS-CoV-2 viral load is normalized by the PMMoV concentration, resulting in the dimensionless metric N/PMMoV. The N gene is present in all variants of the virus. PMMoV is highly abundant RNA virus detected broadly in wastewater.</li>
+<li>Apply two smoothing functions to the normalized SARS-CoV-2 RNA concentration to compare the variability of the estimations: a 10-day trimmed average and an autoregressive model of order 1. These smoothing techniques help capture the underlying SARS-CoV-2 RNA concentration. For detailed information and a more comprehensive understanding of the data processing steps, please refer to the Data Processing section.</li>
+</ol>
+</section>
+<section>
+<h3>Computing the Rt</h3>
+<section>
+<h4>Rt implementation algorithm</h4>
+<p>To estimate the effective reproduction number (<em>Rt</em>), we implement the algorithm proposed by Cori et al. (<a href="https://doi.org/10.1093/aje/kwt133">2013</a>) using the <a href="https://github.com/lo-hfk/epyestim">Epyestim</a> package available for Python and R. This algorithm requires incidence data and the generation interval. The calculation of <em>Rt</em> is based on the following formula:</p>
+<blockquote>
+<p>Rt = I<sub>t</sub> / ∑<sub>s=1</sub><sup>t</sup> I<sub>t-s</sub> w<sub>s</sub></p>
+</blockquote>
+<p>Here, I<sub>t</sub> is the number of new infections on day <em>t</em>, and w<sub>s</sub> is the generation interval, which can be seen as the probability that an infected individual infects others <em>s</em> days after infection.</p>
+<p>For COVID-19 in the Epyestim package, the default generation interval is based on the combination of the serial interval distribution (mean: 4.3 days) (Flaxman et al., 2020) and the delay distribution (mean: 10.3 days) (Brauner et al., 2020).</p>
+</section>
+<section>
+<h4>Estimating Rt for Wastewater: Proxy Case Calculation</h4>
+<p>To compute <em>Rt</em> for wastewater data, we utilize a proxy of the cases derived from the smoothed SARS-CoV-2 RNA concentration. The process involves dividing the smoothed concentration by the minimum concentration observed in the treatment plant. This normalization step ensures that the minimum concentration corresponds to a value of 1, serving as a reference point.</p>
+<p>Next, we multiply the normalized concentration by a scalar value, <em>k</em>, which we set as 4. This assumption implies that the minimum concentration observed in the treatment plant corresponds to approximately 4 infected individuals. The choice of <em>k</em> is not critical for calculating <em>Rt</em> since it is scale-free. Note that if we multiply the incidence series I<sub>1</sub>, ..., I<sub>t</sub> in the above formula by a scalar <em>k</em>, the value of <em>Rt</em> remains unchanged. This scaling factor does not affect the calculation of <em>Rt</em>.</p>
+<p>The formula for computing the proxy of cases from wastewater data is as follows:</p>
+<blockquote>
+<p>I<sub>ww</sub> = k * (C<sub>RNA</sub> / min(C<sub>RNA</sub>))</p>
+</blockquote>
+<p>Here, C<sub>RNA</sub> = (C<sub>1</sub>, ..., C<sub>n</sub>) represents the smoothed concentration vector at different time points. By applying this formula, we obtain a proxy of the cases based on the wastewater data.</p>
+<p>It's important to note that the selection of the scalar value <em>k</em> can impact the sensitivity of the implementation, especially for low counts. As discussed in Capistrán et al. (2022), the value of <em>k</em> influences the posterior coefficient of variation in the algorithm implemented by Cori et al. (2013):</p>
+<blockquote>
+<p>CV<sub>post</sub> = 1 / √(a + ∑<sub>s=t-τ+1</sub><sup>t</sup> I<sub>s</sub>)</p>
+</blockquote>
+<p>Here, <em>a</em> is the shape parameter for the prior distribution of R<sub>t,τ</sub>. In this case, R<sub>t,τ</sub> is assumed to follow a Gamma distribution with parameters (<em>a</em>, <em>b</em>), and it represents the reproductive number in the time period [t-τ+1, t], assuming constant transmissibility.</p>
+<p>It's worth noting that low counts can lead to a high coefficient of variation, emphasizing the need to carefully select an appropriate value for <em>k</em> based on the specific characteristics and dynamics of the analyzed wastewater data.</p>
+</section>
+<section>
+<p>Once we obtain the estimated I<sub>ww</sub>, we can compute <em>Rt</em> using the Epyestim package.</p>
+</section>
+</section>
+<section>
+<h3>References</h3>
+<ol>
+<li>Cori, A., Ferguson, N. M., Fraser, C., \& Cauchemez, S. (2013). A new framework and software to estimate time-varying reproduction numbers during epidemics. <em>American Journal of Epidemiology</em>, 178(9), 1505-1512.</li>
+<li>Capistrán, M. A., Capella, A., \& Christen, J. A. (2022). Filtering and improved Uncertainty Quantification in the dynamic estimation of effective reproduction numbers. <em>Epidemics</em>, 40, 100624.</li>
+<li>Flaxman, S., Mishra, S., Gandy, A., Unwin, H. J. T., Mellan, T. A., Coupland, H., Whittaker, C., et al. (2020). Estimating the effects of non-pharmaceutical interventions on COVID-19 in Europe. <em>Nature</em>, 584(7820), 257-261.</li>
+<li>Brauner, J. M., Mindermann, S., Sharma, M., Stephenson, A. B., Gaven
+
+  
