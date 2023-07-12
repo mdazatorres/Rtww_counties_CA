@@ -27,10 +27,7 @@ with open("text2.html", "r") as file:
 # Set the title of the page
 data_Rt = pd.read_csv('data/data_all_Rt.csv')
 data_Rt['Date'] = pd.to_datetime(data_Rt['Date'])
-#st.set_page_config(layout="wide")
-#st.title("Analysis of wastewater data for California counties")
-
-st.set_page_config(page_title="Rt_wastewater_CA", page_icon=":rocket:", layout="wide", initial_sidebar_state="auto")
+st.set_page_config(layout="wide")
 st.title("Analysis of wastewater data for California counties")
 
 #padding: 10px 15px;
