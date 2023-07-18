@@ -11,7 +11,6 @@ data = [1, 2, 3, 4, 5]
 
 
 
-
 with open("text1.html", "r") as file:
     html_content1 = file.read()
 

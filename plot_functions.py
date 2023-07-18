@@ -4,10 +4,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import rpy2.robjects as robjects
-from rpy2.robjects.packages import importr
-import os
-from rpy2.robjects.conversion import py2rpy
 
 # Set the R_HOME environment variable
 #os.environ['R_HOME'] = "/Library/Frameworks/R.framework/Resources"
