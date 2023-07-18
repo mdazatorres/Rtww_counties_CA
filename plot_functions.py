@@ -39,11 +39,7 @@ from plotly.subplots import make_subplots
 #     return mean_value[0]
 #
 #
-# # Example usage
-# data = {'column_name': [1, 2, 3, 4, 5]}
-# df = pd.DataFrame(data)
-# mean_value = compute_mean(df, 'column_name')
-# print(mean_value)
+
 fontsize=14
 def plotRt(data_county, cases, pr, ww_arima, ww_trimmed): # log
 
