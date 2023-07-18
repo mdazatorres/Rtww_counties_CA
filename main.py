@@ -1,19 +1,16 @@
+from plot_functions import plotRt, plotNconc,plotNconc_data
 import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from plot_functions import plotRt, plotNconc
 
 
 
-# Read the LaTeX document from a file
+# Call the function
+data = [1, 2, 3, 4, 5]
 
 
-#with open("text_1.rtf", "r") as file:
-#    latex_content = file.read()
 
-# Render LaTeX document using st.markdown
-#st.markdown(latex_content, unsafe_allow_html=True)
 
 with open("text1.html", "r") as file:
     html_content1 = file.read()
@@ -56,7 +53,7 @@ st.markdown(
 )
 
 # Create tabs
-tabs = ["Rt estimations","Smoothing functions", "Outlier detection"]
+tabs = ["Rt estimations","Data proccessing", "Analyze your data"]
 
 # Create columns for tabs
 col1, col2, col3 = st.columns(3)
@@ -103,13 +100,14 @@ if st.session_state.selected_tab == "Rt estimations":
     st.components.v1.html(html_content1, height=800, scrolling=True)
 
 
-elif st.session_state.selected_tab == "Smoothing functions":
-    st.write("Smoothing function")
+elif st.session_state.selected_tab == "Data proccessing":
+
     col1, _, col2, _ = st.columns([0.14, 0.05, 0.7, 0.05])
     county = col1.selectbox('County', list_counties)  # Select a county
 
-    ww_arima = col1.checkbox('Wastewater (ARIMA)', value=True)
-    ww_trimmed = col1.checkbox('Wastewater (Trimmed)', value=False)
+    col1.write("Smoothing function")
+    ww_arima = col1.checkbox('ARIMA (1)', value=True)
+    ww_trimmed = col1.checkbox('10d-trimmed ave)', value=False)
 
     data_county = data_Rt[data_Rt.County == county]
 
@@ -126,8 +124,58 @@ elif st.session_state.selected_tab == "Smoothing functions":
 
     st.components.v1.html(html_content2, height=800, scrolling=True)
 
-elif st.session_state.selected_tab == "Outlier detection":
-    st.subheader("👷 Under Construction 👷")
+elif st.session_state.selected_tab == "Analyze your data":
+    st.markdown('### Upload an Excel or CSV file  ')
+    st.write('Please upload an Excel or CSV file containing two columns: "Date" and "conc." The "conc" column should include the normalized or raw RNA concentration detected in wastewater.')
+    col1, _, col2, _ = st.columns([0.4, 0.05, 0.4, 0.05])
+    uploaded_file = col1.file_uploader("Upload Excel file", type=["xlsx"])
+    if uploaded_file is not None:
+        # Read the Excel file
+        st.markdown('### Data proccesing  ')
+        col1, _, col2, _ = st.columns([0.14, 0.05, 0.7, 0.05])
+
+        df = pd.read_excel(uploaded_file)
+        df['Date']= pd.to_datetime(df['Date'])
+        end_date = df['Date'].max().to_pydatetime(); start_date = df['Date'].min().to_pydatetime()
+
+        col1.write("Smoothing function")
+        ww_arima = col1.checkbox('ARIMA (1)', value=True)
+        ww_trimmed = col1.checkbox('10d-trimmed ave)', value=False)
+
+        sl_init, sl_end = col2.slider('', min_value=start_date, max_value=end_date + timedelta(days=1),
+                                      value=(start_date, end_date + timedelta(days=1)), format='MMM DD, YYYY')
+
+        df_ = df[(df['Date'] >= sl_init) & (df['Date'] <= sl_end)]
+
+
+        #mean = compute_mean(df)
+        fig3=plotNconc_data(df_, ww_arima, ww_trimmed)
+        col2.plotly_chart(fig3, use_container_width=True)
+
+        st.markdown('### Rt estimation ')
+
+
+
+
+        # tm < - 1: dim(data)[1]  # data[,"time"]
+        # y < - log(data[, "SC2_N_norm_PMMoV"])
+        # # y = ifelse(y==-Inf,NA,y)
+        # ## fit the model
+        # formula = y
+        # ~f(z, model="ar1")
+        # result = inla(formula, family="gaussian", data=list(y=y, z=tm))  # , E=E)
+        # # summary(result)
+        # # Cases respect to minimum concentration
+        # wc = 1
+        # # expected log concetration
+        # yhat = exp(result$summary.fitted.values)
+        # kk = wc / min(yhat$mean[yhat$mean > 0], na.rm = T)
+        # k_av10 = wc / min(data$N_av10, na.rm = T)
+        # # Recover cases from WW: proportional of cases
+        # data$Cases_N_av10 = k_av10 * data$N_av10  # Cases from moving average
+        # data$Cases_N = kk * yhat$mean  # Cases from INLA
+
+
 
 
 
