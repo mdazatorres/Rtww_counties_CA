@@ -44,7 +44,7 @@ fontsize=14
 def plotRt(data_county, cases, pr, ww_arima, ww_trimmed): # log
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    x = data_county.Date +  pd.DateOffset(days=10)
+    x = data_county.Date #+  pd.DateOffset(days=10)
 
     county = data_county["County"].iloc[0]
     if ww_arima:

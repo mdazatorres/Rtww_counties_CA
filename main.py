@@ -21,7 +21,8 @@ with open("text2.html", "r") as file:
 
 
 # Set the title of the page
-data_Rt = pd.read_csv('data/data_all_Rt.csv')
+#data_Rt = pd.read_csv('data/data_all_Rt.csv')
+data_Rt = pd.read_csv('data/data_Rt_ww_CA.csv')
 data_Rt['Date'] = pd.to_datetime(data_Rt['Date'])
 st.set_page_config(layout="wide")
 st.title("Analysis of wastewater data for California counties")
@@ -52,7 +53,7 @@ st.markdown(
 )
 
 # Create tabs
-tabs = ["Rt estimations","Data proccessing", "Analyze your data"]
+tabs = ["Data proccessing","Rt estimations", "Analyze your data"]
 
 # Create columns for tabs
 col1, col2, col3 = st.columns(3)
@@ -79,7 +80,7 @@ list_counties =list(np.unique(list(data_Rt.County.unique())))
 # Render content based on the selected tab
 
 if st.session_state.selected_tab == "Rt estimations":
-    col1, _, col2,_= st.columns([0.14, 0.05,0.7,0.05])
+    col1, _, col2,_= st.columns([0.14, 0.05, 0.7, 0.05])
     county = col1.selectbox('County', list_counties)  # Select a county
     col1.write('Rt computed with')
     ww_arima =col1.checkbox('Wastewater (ARIMA)', value=True)
